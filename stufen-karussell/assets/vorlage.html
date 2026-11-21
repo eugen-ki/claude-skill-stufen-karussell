@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Stufen-Karussell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,600&family=Inter:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* ===== Nur hier Farben und Schriften anpassen ===== */
+:root {
+  --grund: #0d1b2a;      /* Hintergrund dunkel */
+  --hell: #f3efe6;       /* Text auf dunkel */
+  --tinte: #0d1b2a;      /* Text auf hell */
+  --akzent: #ff6b35;     /* Markenfarbe: Stufen, Unterstreichung, Kommentar-Wort */
+  --flaeche: #f2c14e;    /* Farbfläche für Folien ohne Foto */
+  --f-gross: "Anton", "Impact", "Arial Black", sans-serif;
+  --f-zeile: "Fraunces", Georgia, serif;
+  --f-klein: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+/* ================================================== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1080px; height: 1350px; overflow: hidden; background: var(--grund); }
+body.nur-text, body.nur-text .folie { background: transparent !important; }
+body.nur-text .folie::before, body.nur-text .folie::after { display: none; }
+.folie { display: none; position: relative; width: 1080px; height: 1350px; overflow: hidden;
+  background: var(--grund) center / cover no-repeat; color: var(--hell); font-family: var(--f-zeile); }
+.folie:target, .folie.zeigen { display: block; }
+/* Körnung und Abdunklung oben, damit Text auf Fotos lesbar bleibt */
+.folie::before { content: ""; position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(to bottom, rgba(0,0,0,.45) 0%, rgba(0,0,0,0) 55%); }
+.folie::after { content: ""; position: absolute; inset: 0; z-index: 2; opacity: .16; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='k'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23k)'/></svg>"); }
+.folie.hell { color: var(--tinte); }
+.folie.hell::before { background: none; }
+.folie.flaeche { background-color: var(--flaeche); color: var(--tinte); }
+.folie.flaeche::before { background: none; }
+.inhalt { position: relative; z-index: 3; padding: 150px 90px 0; text-align: center; }
+.zeile { font-style: italic; font-size: 84px; line-height: 1.05; }
+.gross { font-family: var(--f-gross); text-transform: uppercase; font-size: 180px; line-height: .95;
+  letter-spacing: .5px; margin-top: 10px; white-space: nowrap; }
+.leise { font-style: italic; font-size: 50px; line-height: 1.2; margin-top: 26px; }
+.leise u, .unten u { text-decoration-color: var(--akzent); text-decoration-thickness: 5px; text-underline-offset: 8px; }
+.unten { position: absolute; z-index: 3; left: 90px; right: 90px; bottom: 150px; text-align: center;
+  font-style: italic; font-size: 46px; text-shadow: 0 2px 16px rgba(0,0,0,.4); }
+.flaeche .unten, .hell .unten { text-shadow: none; }
+/* Fortschritt: kleine Stufen oben */
+.fortschritt { display: flex; justify-content: center; align-items: flex-end; gap: 10px; height: 60px; margin-bottom: 22px; }
+.fortschritt span { width: 34px; background: currentColor; opacity: .25; border-radius: 3px; }
+.fortschritt span.fertig { opacity: .6; }
+.fortschritt span.jetzt { opacity: 1; background: var(--akzent); }
+/* Treppe: Übersicht (verschwommen) und Abschluss (klar) */
+.treppe { position: absolute; z-index: 3; left: 90px; right: 90px; display: flex; align-items: flex-end; gap: 14px; }
+.treppe span { flex: 1; background: var(--akzent); border-radius: 6px 6px 0 0; color: var(--tinte);
+  font-family: var(--f-klein); font-weight: 700; display: flex; flex-direction: column; justify-content: flex-start;
+  align-items: center; padding-top: 14px; font-size: 30px; }
+.treppe span b { font-size: 44px; }
+.treppe span i { font-style: normal; font-size: 26px; text-align: center; padding: 6px 4px 0; line-height: 1.1; }
+.treppe.verschwommen span i { filter: blur(9px); }
+.fuss { position: absolute; z-index: 3; left: 70px; right: 70px; bottom: 50px; display: flex; justify-content: space-between;
+  font-family: var(--f-klein); font-weight: 500; font-size: 30px; opacity: .85; }
+.flaeche .kommentar { color: var(--tinte); }
+/* Ohne Foto: Text in die Mitte statt nach oben */
+.folie.ohne-foto .inhalt { padding-top: 380px; }
+.kommentar { font-family: var(--f-gross); color: var(--akzent); font-size: 220px; line-height: 1; margin-top: 6px; }
+</style>
+</head>
+<body>
+<!--
+  So funktioniert die Vorlage:
+  - Jede Folie ist eine <section class="folie" id="f1"> bis id="f10">.
+  - Foto: style="background-image:url(bilder/01.jpg)" an die section. Ohne Foto: class="folie ohne-foto" (dunkel, Text mittig)
+    oder class="folie flaeche" (Farbfläche).
+  - Heller Fotohintergrund (Himmel, Wand): class="folie hell" für dunkle Schrift.
+  - Bild einer Folie: Browser im Kopfmodus mit Adresse karussell.html#f3 aufrufen.
+  - Nur Text ohne Hintergrund (für das Cover-Video): karussell.html?nur-text#f1
+  - Die Treppen und Fortschrittsbalken baut das Skript unten aus STUFEN.
+-->
+
+<section class="folie ohne-foto" id="f1">
+  <div class="inhalt">
+    <div class="zeile">du machst es</div>
+    <div class="gross">VERMUTLICH<br>FALSCH</div>
+    <div class="leise">hier ist die Lösung, <u>Stufe für Stufe</u>.</div>
+  </div>
+</section>
+
+<section class="folie" id="f2">
+  <div class="inhalt">
+    <div class="zeile">6 Stufen zum</div>
+    <div class="gross">ERGEBNIS</div>
+  </div>
+  <div class="treppe verschwommen" data-treppe data-start="120" data-schritt="70" style="bottom:170px"></div>
+  <div class="fuss"><span>@deinname</span><span>speichern &rarr;</span></div>
+</section>
+
+<section class="folie ohne-foto" id="f3"><div class="inhalt"><div class="fortschritt" data-stufe="1"></div>
+  <div class="zeile">Stufe eins</div><div class="gross">WORT</div><div class="leise">so geht es, <u>genau so</u>.</div></div>
+  <div class="fuss"><span>@deinname</span><span>&rarr;</span></div></section>
+
+<section class="folie ohne-foto" id="f4"><div class="inhalt"><div class="fortschritt" data-stufe="2"></div>
+  <div class="zeile">Stufe zwei</div><div class="gross">WORT</div><div class="leise">kurzer Satz.</div></div>
+  <div class="fuss"><span>@deinname</span><span>&rarr;</span></div></section>
+
+<section class="folie ohne-foto" id="f5"><div class="inhalt"><div class="fortschritt" data-stufe="3"></div>
+  <div class="zeile">Stufe drei</div><div class="gross">WORT</div><div class="leise">kurzer Satz.</div></div>
+  <div class="fuss"><span>@deinname</span><span>&rarr;</span></div></section>
+
+<section class="folie ohne-foto" id="f6"><div class="inhalt"><div class="fortschritt" data-stufe="4"></div>
+  <div class="zeile">Stufe vier</div><div class="gross">WORT</div><div class="leise">kurzer Satz.</div></div>
+  <div class="fuss"><span>@deinname</span><span>&rarr;</span></div></section>
+
+<section class="folie ohne-foto" id="f7"><div class="inhalt">
+  <div class="zeile" style="font-size:72px">Stufe 1 bis 4 machen es</div><div class="gross" style="font-size:160px">SICHER.</div>
+  <div class="zeile" style="font-size:72px;margin-top:40px">Stufe 5 und 6 machen es</div><div class="gross" style="font-size:160px">STARK.</div></div>
+  <div class="unten">kommentiere <u>WORT</u>, dann schicke ich dir alles.</div>
+  <div class="fuss"><span>@deinname</span><span>&rarr;</span></div></section>
+
+<section class="folie ohne-foto" id="f8"><div class="inhalt"><div class="fortschritt" data-stufe="5"></div>
+  <div class="zeile">Stufe fünf</div><div class="gross">WORT</div><div class="leise">kurzer Satz.</div></div>
+  <div class="fuss"><span>@deinname</span><span>&rarr;</span></div></section>
+
+<section class="folie ohne-foto" id="f9"><div class="inhalt"><div class="fortschritt" data-stufe="6"></div>
+  <div class="zeile">Stufe sechs</div><div class="gross">WORT</div><div class="leise">der Moment, <u>auf den es ankommt</u>.</div></div>
+  <div class="fuss"><span>@deinname</span><span>&rarr;</span></div></section>
+
+<section class="folie flaeche" id="f10">
+  <div class="treppe" data-treppe data-start="130" data-schritt="44" style="top:110px;height:400px"></div>
+  <div class="inhalt" style="padding-top:570px">
+    <div class="zeile" style="font-size:100px">Kommentiere</div>
+    <div class="kommentar">WORT</div>
+    <div class="leise" style="font-size:46px">und ich schicke dir <u>die Vorlage</u>.</div>
+  </div>
+  <div class="fuss"><span>@deinname</span><span>speichern</span></div>
+</section>
+
+<script>
+const STUFEN = ["eins", "zwei", "drei", "vier", "fünf", "sechs"]; // die 6 Stufen-Namen, je 1 bis 2 Wörter
+if (location.search.includes("nur-text")) { document.body.classList.add("nur-text"); document.documentElement.style.background = "transparent"; }
+if (!location.hash) document.querySelector(".folie").classList.add("zeigen");
+document.querySelectorAll("[data-treppe]").forEach(el => {
+  const start = +el.dataset.start, schritt = +el.dataset.schritt;
+  el.innerHTML = STUFEN.map((n, i) => `<span style="height:${start + i * schritt}px"><b>${i + 1}</b><i>${n}</i></span>`).join("");
+});
+document.querySelectorAll("[data-stufe]").forEach(el => {
+  const jetzt = +el.dataset.stufe;
+  el.innerHTML = STUFEN.map((_, i) => `<span class="${i + 1 === jetzt ? "jetzt" : i + 1 < jetzt ? "fertig" : ""}" style="height:${(i + 1) * 9}px"></span>`).join("");
+});
+// große Wörter verkleinern, bis sie in die Breite passen
+document.fonts.ready.then(() => document.querySelectorAll(".gross, .kommentar").forEach(el => {
+  let g = parseFloat(getComputedStyle(el).fontSize);
+  while (el.scrollWidth > el.clientWidth && g > 60) el.style.fontSize = (g -= 4) + "px";
+}));
+</script>
+</body>
+</html>
