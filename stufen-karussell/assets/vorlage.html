@@ -54,7 +54,7 @@ body.nur-text .folie::before, body.nur-text .folie::after { display: none; }
   font-family: var(--f-klein); font-weight: 700; display: flex; flex-direction: column; justify-content: flex-start;
   align-items: center; padding-top: 14px; font-size: 30px; }
 .treppe span b { font-size: 44px; }
-.treppe span i { font-style: normal; font-size: 26px; text-align: center; padding: 6px 4px 0; line-height: 1.1; }
+.treppe span i { font-style: normal; font-size: 26px; text-align: center; padding: 6px 4px 0; line-height: 1.1; white-space: nowrap; }
 .treppe.verschwommen span i { filter: blur(9px); }
 .fuss { position: absolute; z-index: 3; left: 70px; right: 70px; bottom: 50px; display: flex; justify-content: space-between;
   font-family: var(--f-klein); font-weight: 500; font-size: 30px; opacity: .85; }
@@ -139,7 +139,7 @@ if (location.search.includes("nur-text")) { document.body.classList.add("nur-tex
 if (!location.hash) document.querySelector(".folie").classList.add("zeigen");
 document.querySelectorAll("[data-treppe]").forEach(el => {
   const start = +el.dataset.start, schritt = +el.dataset.schritt;
-  el.innerHTML = STUFEN.map((n, i) => `<span style="height:${start + i * schritt}px"><b>${i + 1}</b><i>${n}</i></span>`).join("");
+  el.innerHTML = STUFEN.map((n, i) => `<span style="height:${start + i * schritt}px"><b>${i + 1}</b><i style="font-size:${Math.max(12, Math.min(26, Math.floor(118 / ([...n].length * 0.8))))}px">${n}</i></span>`).join("");
 });
 document.querySelectorAll("[data-stufe]").forEach(el => {
   const jetzt = +el.dataset.stufe;
